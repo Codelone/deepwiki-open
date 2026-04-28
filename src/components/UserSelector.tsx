@@ -397,7 +397,7 @@ next.config.js
                       onClick={() => setFilterMode('exclude')}
                       className={`flex-1 px-3 py-2 rounded-md border text-sm transition-colors ${
                         filterMode === 'exclude'
-                          ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                          ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-white'
                           : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
                       }`}
                     >
@@ -408,7 +408,7 @@ next.config.js
                       onClick={() => setFilterMode('include')}
                       className={`flex-1 px-3 py-2 rounded-md border text-sm transition-colors ${
                         filterMode === 'include'
-                          ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                          ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-white'
                           : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
                       }`}
                     >

@@ -46,36 +46,36 @@ export default function TokenInput({
                 {t.form?.selectPlatform || 'Select Platform'}
               </label>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPlatform('github')}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition-all ${selectedPlatform === 'github'
-                    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-sm'
-                    : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
-                    }`}
-                >
-                  <span className="text-sm">GitHub</span>
-                </button>
+                {/*<button*/}
+                {/*  type="button"*/}
+                {/*  onClick={() => setSelectedPlatform('github')}*/}
+                {/*  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition-all ${selectedPlatform === 'github'*/}
+                {/*    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-white shadow-sm'*/}
+                {/*    : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'*/}
+                {/*    }`}*/}
+                {/*>*/}
+                {/*  <span className="text-sm">GitHub</span>*/}
+                {/*</button>*/}
                 <button
                   type="button"
                   onClick={() => setSelectedPlatform('gitlab')}
                   className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition-all ${selectedPlatform === 'gitlab'
-                    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-sm'
+                    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-white shadow-sm'
                     : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
                     }`}
                 >
                   <span className="text-sm">GitLab</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedPlatform('bitbucket')}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition-all ${selectedPlatform === 'bitbucket'
-                    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-sm'
-                    : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
-                    }`}
-                >
-                  <span className="text-sm">Bitbucket</span>
-                </button>
+                {/*<button*/}
+                {/*  type="button"*/}
+                {/*  onClick={() => setSelectedPlatform('bitbucket')}*/}
+                {/*  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition-all ${selectedPlatform === 'bitbucket'*/}
+                {/*    ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] text-white shadow-sm'*/}
+                {/*    : 'border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'*/}
+                {/*    }`}*/}
+                {/*>*/}
+                {/*  <span className="text-sm">Bitbucket</span>*/}
+                {/*</button>*/}
               </div>
             </div>
           )}

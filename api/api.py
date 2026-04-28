@@ -1,5 +1,7 @@
 import os
 import logging
+
+import requests
 from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -9,6 +11,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 import google.generativeai as genai
 import asyncio
+import httpx
 
 # Configure logging
 from api.logging_config import setup_logging
@@ -632,3 +635,148 @@ async def get_processed_projects():
     except Exception as e:
         logger.error(f"Error listing processed projects from {WIKI_CACHE_DIR}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to list processed projects from server cache.")
+
+# --- GitLab API Proxy Endpoint ---
+@app.api_route("/api/gitlab/proxy", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+async def gitlab_api_proxy(request: Request):
+    """
+    Proxy endpoint to forward requests to GitLab API.
+    This avoids CORS issues when accessing GitLab API directly from the frontend.
+    """
+    try:
+        # Get base_url from query parameters or use default
+        base_url = request.query_params.get("base_url", "https://gitlab.com")
+        # Get path from query parameters
+        path = request.query_params.get("path", "").strip()
+        
+        logger.info(f"GitLab proxy request - Method: {request.method}, Base URL: {base_url}, Path: {path}")
+
+        # Handle .git suffix in path for project lookup
+        if path.endswith(".git"):
+            project_id = check_project_exists_get_new_url(request)
+            if project_id:
+                path = f'projects/{project_id}'
+                logger.info(f"Converted .git path to project ID: {project_id}")
+
+        # Remove base_url and path from query parameters to avoid duplication
+        params_dict = dict(request.query_params)
+        params_dict.pop("base_url", None)
+        params_dict.pop("path", None)
+        
+        # Construct full URL with path and api/v4 prefix
+        proxy_url = f"{base_url}/api/v4/{path}"
+        
+        # Prepare headers: copy request headers, remove host and connection headers
+        headers = dict(request.headers)
+        # Remove headers that should not be forwarded
+        headers_to_remove = ["host", "connection", "content-length", "transfer-encoding"]
+        for header in headers_to_remove:
+            headers.pop(header, None)
+        
+        logger.debug(f"Forwarding to: {proxy_url}")
+        logger.debug(f"Headers: {headers}")
+        
+        # Forward request body if it exists
+        body = await request.body() if request.method in ["POST", "PUT", "PATCH"] else None
+        
+        # Use httpx to forward the request with SSL verification disabled for internal servers
+        async with httpx.AsyncClient(verify=False) as client:
+            response = await client.request(
+                method=request.method,
+                url=proxy_url,
+                headers=headers,
+                params=params_dict,
+                content=body,
+                timeout=httpx.Timeout(30.0)
+            )
+        
+        logger.info(f"GitLab API response status: {response.status_code}")
+        
+        # Prepare response headers, remove problematic headers
+        response_headers = dict(response.headers)
+        response_headers_to_remove = ["content-encoding", "transfer-encoding", "connection"]
+        for header in response_headers_to_remove:
+            response_headers.pop(header, None)
+        
+        # Return the response from GitLab directly
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response_headers
+        )
+    except httpx.TimeoutException as e:
+        logger.error(f"Timeout proxying GitLab API request: {str(e)}")
+        raise HTTPException(status_code=504, detail=f"Gateway timeout while connecting to GitLab API")
+    except httpx.HTTPError as e:
+        logger.error(f"HTTP error proxying GitLab API request: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Bad gateway: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error proxying GitLab API request: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to proxy request to GitLab API: {str(e)}")
+
+
+
+def check_project_exists_get_new_url(request):
+    """
+    检查项目是否存在并获取其ID
+
+    Args:
+        request: FastAPI Request对象,包含查询参数和请求头
+
+    Returns:
+        int: 项目ID,如果未找到返回None
+    """
+    # 从请求头中获取token,支持多种格式
+    token = dict(request.headers).get('private-token') or dict(request.headers).get('PRIVATE-TOKEN')
+    headers = {}
+    if token:
+        headers['Private-Token'] = token
+
+    path = request.query_params.get("path", "")
+    # 修复:添加了缺失的引号
+    project_name = path.replace("projects/", '').replace(".git", '')
+
+    # 模糊搜索项目名
+    base_url = request.query_params.get("base_url", "https://gitlab.com") + f'/api/v4/projects?search={project_name.split("/")[1]}'
+    
+    logger.info(f"Searching for GitLab project: {project_name}")
+
+    try:
+        # 发送GET请求获取所有可访问的项目
+        response = requests.get(base_url, headers=headers, verify=False, timeout=10)
+        response.raise_for_status()  # 检查HTTP错误
+
+        # 解析JSON响应
+        projects = response.json()
+        
+        if not isinstance(projects, list):
+            logger.error(f"Unexpected response format: {type(projects)}")
+            return None
+
+        # 遍历项目列表查找匹配项
+        for project in projects:
+            path_with_namespace = project.get('path_with_namespace')
+            if path_with_namespace == project_name:
+                project_id = project.get('id')
+                logger.info(f"Found project ID: {project_id} for {project_name}")
+                return project_id
+
+        # 如果未找到匹配项
+        logger.warning(f"Project not found: {project_name}")
+        return None
+
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout getting project id: {str(e)}")
+        return None
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error getting project id: {str(e)}", exc_info=True)
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error getting project id: {str(e)}", exc_info=True)
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error getting project id: {str(e)}", exc_info=True)
+        return None
+
+
+

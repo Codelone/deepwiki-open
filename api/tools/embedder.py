@@ -9,7 +9,7 @@ def get_embedder(is_local_ollama: bool = False, use_google_embedder: bool = Fals
     Args:
         is_local_ollama: Legacy parameter for Ollama embedder
         use_google_embedder: Legacy parameter for Google embedder  
-        embedder_type: Direct specification of embedder type ('ollama', 'google', 'bedrock', 'openai')
+        embedder_type: Direct specification of embedder type ('ollama', 'google', 'openai')
     
     Returns:
         adal.Embedder: Configured embedder instance
@@ -45,7 +45,7 @@ def get_embedder(is_local_ollama: bool = False, use_google_embedder: bool = Fals
     if "initialize_kwargs" in embedder_config:
         model_client = model_client_class(**embedder_config["initialize_kwargs"])
     else:
-        model_client = model_client_class()
+        model_client = model_client_class(base_url=embedder_config.get("base_url"))
     
     # Create embedder with basic parameters
     embedder_kwargs = {"model_client": model_client, "model_kwargs": embedder_config["model_kwargs"]}

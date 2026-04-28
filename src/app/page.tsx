@@ -75,7 +75,7 @@ export default function Home() {
     return key;
   };
 
-  const [repositoryInput, setRepositoryInput] = useState('https://github.com/AsyncFuncAI/deepwiki-open');
+  const [repositoryInput, setRepositoryInput] = useState('http://cicdcoding.tlb.com/7center-application/deepwiki-open.git');
 
   const REPO_CONFIG_CACHE_KEY = 'deepwikiRepoConfigCache';
 
@@ -545,19 +545,7 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-3 text-xs text-[var(--muted)]">
               <div
                 className="bg-[var(--background)]/70 p-3 rounded border border-[var(--border-color)] font-mono overflow-x-hidden whitespace-nowrap"
-              >https://github.com/AsyncFuncAI/deepwiki-open
-              </div>
-              <div
-                className="bg-[var(--background)]/70 p-3 rounded border border-[var(--border-color)] font-mono overflow-x-hidden whitespace-nowrap"
-              >https://gitlab.com/gitlab-org/gitlab
-              </div>
-              <div
-                className="bg-[var(--background)]/70 p-3 rounded border border-[var(--border-color)] font-mono overflow-x-hidden whitespace-nowrap"
-              >AsyncFuncAI/deepwiki-open
-              </div>
-              <div
-                className="bg-[var(--background)]/70 p-3 rounded border border-[var(--border-color)] font-mono overflow-x-hidden whitespace-nowrap"
-              >https://bitbucket.org/atlassian/atlaskit
+              >http://cicdcoding.tlb.com/7center-application/deepwiki-open.git
               </div>
             </div>
           </div>
@@ -603,18 +591,18 @@ export default function Home() {
 
           <div className="flex items-center gap-6">
             <div className="flex items-center space-x-5">
-              <a href="https://github.com/AsyncFuncAI/deepwiki-open" target="_blank" rel="noopener noreferrer"
+              <a href="http://cicd.tlb.com/codingRoot/7center-application/deepwiki-open/" target="_blank" rel="noopener noreferrer"
                 className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
                 <FaGithub className="text-xl" />
               </a>
-              <a href="https://buymeacoffee.com/sheing" target="_blank" rel="noopener noreferrer"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
-                <FaCoffee className="text-xl" />
-              </a>
-              <a href="https://x.com/sashimikun_void" target="_blank" rel="noopener noreferrer"
-                className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">
-                <FaTwitter className="text-xl" />
-              </a>
+              {/*<a href="https://buymeacoffee.com/sheing" target="_blank" rel="noopener noreferrer"*/}
+              {/*  className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">*/}
+              {/*  <FaCoffee className="text-xl" />*/}
+              {/*</a>*/}
+              {/*<a href="https://x.com/sashimikun_void" target="_blank" rel="noopener noreferrer"*/}
+              {/*  className="text-[var(--muted)] hover:text-[var(--accent-primary)] transition-colors">*/}
+              {/*  <FaTwitter className="text-xl" />*/}
+              {/*</a>*/}
             </div>
             <ThemeToggle />
           </div>

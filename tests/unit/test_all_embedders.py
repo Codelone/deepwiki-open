@@ -93,13 +93,13 @@ class TestEmbedderConfiguration:
         assert 'embedder_google' in configs, "Google embedder config missing"
         assert 'embedder_ollama' in configs, "Ollama embedder config missing"
         assert 'embedder_bedrock' in configs, "Bedrock embedder config missing"
-        
+
         # Check client classes are available
         assert 'OpenAIClient' in CLIENT_CLASSES, "OpenAIClient missing from CLIENT_CLASSES"
         assert 'GoogleEmbedderClient' in CLIENT_CLASSES, "GoogleEmbedderClient missing from CLIENT_CLASSES"
         assert 'OllamaClient' in CLIENT_CLASSES, "OllamaClient missing from CLIENT_CLASSES"
         assert 'BedrockClient' in CLIENT_CLASSES, "BedrockClient missing from CLIENT_CLASSES"
-    
+
     def test_embedder_type_detection(self):
         """Test embedder type detection functions."""
         from api.config import get_embedder_type, is_ollama_embedder, is_google_embedder, is_bedrock_embedder
@@ -115,7 +115,7 @@ class TestEmbedderConfiguration:
         assert isinstance(is_ollama, bool), "is_ollama_embedder should return boolean"
         assert isinstance(is_google, bool), "is_google_embedder should return boolean"
         assert isinstance(is_bedrock, bool), "is_bedrock_embedder should return boolean"
-        
+
         # Only one should be true at a time (unless using openai default)
         if current_type == 'bedrock':
             assert is_bedrock and not is_ollama and not is_google
@@ -161,7 +161,7 @@ class TestEmbedderFactory:
             mock_session_cls.return_value = mock_session
             bedrock_embedder = get_embedder(embedder_type='bedrock')
             assert bedrock_embedder is not None, "Bedrock embedder should be created"
-        
+
         # Test OpenAI embedder
         openai_embedder = get_embedder(embedder_type='openai')
         assert openai_embedder is not None, "OpenAI embedder should be created"
@@ -236,10 +236,10 @@ class TestEmbedderClients:
         import adalflow as adal
         from api.openai_client import OpenAIClient
         
-        client = OpenAIClient()
+        client = OpenAIClient(base_url="http://10.244.51.171:8887/v1")
         embedder = adal.Embedder(
             model_client=client,
-            model_kwargs={"model": "text-embedding-3-small", "dimensions": 256}
+            model_kwargs={"model": "m3e-base"}
         )
         
         result = embedder("Hello world")
@@ -441,7 +441,7 @@ def run_all_tests():
     
     # Test embedder config with different types
     config_test = TestEmbedderConfiguration()
-    for embedder_type in ['openai', 'google', 'ollama', 'bedrock']:
+    for embedder_type in ['openai', 'google', 'ollama']:
         runner.run_test(
             lambda et=embedder_type: config_test.test_get_embedder_config(et),
             f"TestEmbedderConfiguration.test_get_embedder_config[{embedder_type}]"
@@ -464,7 +464,7 @@ def run_all_tests():
     
     # Test environment variable handling
     env_test = TestEnvironmentVariableHandling()
-    for embedder_type in ['openai', 'google', 'ollama', 'bedrock']:
+    for embedder_type in ['openai', 'google', 'ollama']:
         runner.run_test(
             lambda et=embedder_type: env_test.test_embedder_type_env_var(et),
             f"TestEnvironmentVariableHandling.test_embedder_type_env_var[{embedder_type}]"

@@ -1,0 +1,27 @@
+{
+  "embedder": {
+    "client_class": "OpenAIClient",
+    "initialize_kwargs": {
+      "api_key": "xxx",
+      "base_url": "http://10.244.43.73:8892/v1"
+    },
+    "model_kwargs": {
+      "model": "m3e-base",
+      "encoding_format": "float"
+    }
+  },
+  "embedder_ollama": {
+    "client_class": "OllamaClient",
+    "model_kwargs": {
+      "model": "nomic-embed-text"
+    }
+  },
+  "retriever": {
+    "top_k": 20
+  },
+  "text_splitter": {
+    "split_by": "token",
+    "chunk_size": 100,
+    "chunk_overlap": 10
+  }
+}

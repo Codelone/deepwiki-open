@@ -10,7 +10,6 @@ yarn-debug.log
 yarn-error.log
 
 # Next.js
-.next
 out
 
 # Python cache files (but keep api/ directory)

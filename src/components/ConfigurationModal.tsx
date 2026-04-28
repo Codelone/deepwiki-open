@@ -163,7 +163,7 @@ export default function ConfigurationModal({
                   onClick={() => setIsComprehensiveView(true)}
                   className={`flex-1 flex items-center justify-between p-2 rounded-md border transition-colors ${
                     isComprehensiveView
-                      ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+                      ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-white'
                       : 'bg-[var(--background)]/50 border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
                   }`}
                 >
@@ -187,7 +187,7 @@ export default function ConfigurationModal({
                   onClick={() => setIsComprehensiveView(false)}
                   className={`flex-1 flex items-center justify-between p-2 rounded-md border transition-colors ${
                     !isComprehensiveView
-                      ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+                      ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-white'
                       : 'bg-[var(--background)]/50 border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
                   }`}
                 >

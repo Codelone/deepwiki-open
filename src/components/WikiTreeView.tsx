@@ -98,7 +98,7 @@ const WikiTreeView: React.FC<WikiTreeViewProps> = ({
                   key={pageId}
                   className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
                     currentPageId === pageId
-                      ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30'
+                      ? 'bg-[var(--accent-primary)]/20 text-white border border-[var(--accent-primary)]/30'
                       : 'text-[var(--foreground)] hover:bg-[var(--background)] border border-transparent'
                   }`}
                   onClick={() => onPageSelect(pageId)}
@@ -127,6 +127,11 @@ const WikiTreeView: React.FC<WikiTreeViewProps> = ({
         )}
       </div>
     );
+
+    // Remove this section from visited set when done
+    visitedSections.current.delete(sectionId);
+
+    return result;
   };
 
   // If there are no sections defined yet, or if sections/rootSections are empty arrays, fall back to the flat list view
@@ -139,7 +144,7 @@ const WikiTreeView: React.FC<WikiTreeViewProps> = ({
             <button
               className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                 currentPageId === page.id
-                  ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30'
+                  ? 'bg-[var(--accent-primary)]/20 text-white border border-[var(--accent-primary)]/30'
                   : 'text-[var(--foreground)] hover:bg-[var(--background)] border border-transparent'
               }`}
               onClick={() => onPageSelect(page.id)}

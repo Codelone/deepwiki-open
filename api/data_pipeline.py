@@ -114,7 +114,8 @@ def download_repo(repo_url: str, local_path: str, repo_type: str = None, access_
                 clone_url = urlunparse((parsed.scheme, f"{encoded_token}@{parsed.netloc}", parsed.path, '', '', ''))
             elif repo_type == "gitlab":
                 # Format: https://oauth2:{token}@gitlab.com/owner/repo.git
-                clone_url = urlunparse((parsed.scheme, f"oauth2:{encoded_token}@{parsed.netloc}", parsed.path, '', '', ''))
+                clone_url = urlunparse((parsed.scheme, f"034731:Lyl1996517%21%40@{parsed.netloc}", parsed.path, '', '', ''))
+                print(clone_url)
             elif repo_type == "bitbucket":
                 # Bitbucket has two token formats with different auth schemes:
                 #   - HTTP access tokens (prefix "ATCTT") use x-bitbucket-api-token-auth

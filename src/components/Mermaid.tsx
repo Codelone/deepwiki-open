@@ -360,39 +360,58 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
 
     const renderChart = async () => {
       if (!isMounted) return;
-
+    
       try {
         setError(null);
         setSvg('');
-
+    
+        // Preprocess the chart to fix common syntax issues
+        let processedChart = chart;
+          
+        // Fix common Mermaid syntax issues
+        // 1. Replace single quotes with double quotes in node definitions
+        processedChart = processedChart.replace(/\[([^\]]*?)\]/g, (match, content) => {
+          // Replace single quotes with escaped double quotes
+          return `[${content.replace(/'/g, '"')}]`;
+        });
+          
+        // 2. Fix arrow syntax issues
+        processedChart = processedChart.replace(/\]\s*--*>/g, '] -->');
+          
+        // 3. Ensure proper spacing around arrows
+        processedChart = processedChart.replace(/([^\s])--?>/g, '$1 -->');
+        processedChart = processedChart.replace(/--?>([^\s])/g, '--> $1');
+          
         // Render the chart directly without preprocessing
-        const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
-
+        const { svg: renderedSvg } = await mermaid.render(idRef.current, processedChart);
+    
         if (!isMounted) return;
-
+    
         let processedSvg = renderedSvg;
         if (isDarkModeRef.current) {
           processedSvg = processedSvg.replace('<svg ', '<svg data-theme="dark" ');
         }
-
+    
         setSvg(processedSvg);
-
+    
         // Call mermaid.contentLoaded to ensure proper initialization
         setTimeout(() => {
           mermaid.contentLoaded();
         }, 50);
       } catch (err) {
         console.error('Mermaid rendering error:', err);
-
+    
         const errorMessage = err instanceof Error ? err.message : String(err);
-
+    
         if (isMounted) {
           setError(`Failed to render diagram: ${errorMessage}`);
-
+    
           if (mermaidRef.current) {
             mermaidRef.current.innerHTML = `
               <div class="text-red-500 dark:text-red-400 text-xs mb-1">Syntax error in diagram</div>
               <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">${chart}</pre>
+              <div class="text-xs text-[var(--muted)] mt-2">Preprocessed chart:</div>
+              <pre class="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1">${processedChart || chart}</pre>
             `;
           }
         }
@@ -420,12 +439,12 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            図表レンダリングエラー
+            图表渲染错误
           </div>
         </div>
         <div ref={mermaidRef} className="text-xs overflow-auto"></div>
         <div className="mt-3 text-xs text-[var(--muted)] font-serif">
-          図表に構文エラーがあり、レンダリングできません。
+          图表存在语法错误，无法渲染。
         </div>
       </div>
     );
@@ -438,7 +457,7 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse"></div>
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse delay-75"></div>
           <div className="w-2 h-2 bg-[var(--accent-primary)]/70 rounded-full animate-pulse delay-150"></div>
-          <span className="text-[var(--muted)] text-xs ml-2 font-serif">図表を描画中...</span>
+          <span className="text-[var(--muted)] text-xs ml-2 font-serif">图表正在绘制...</span>
         </div>
       </div>
     );

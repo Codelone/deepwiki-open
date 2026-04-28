@@ -26,7 +26,7 @@ const WikiTypeSelector: React.FC<WikiTypeSelectorProps> = ({
           onClick={() => setIsComprehensiveView(true)}
           className={`flex items-center justify-between p-3 rounded-md border transition-colors ${
             isComprehensiveView
-              ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+              ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-white'
               : 'bg-[var(--background)]/50 border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
           }`}
         >
@@ -51,7 +51,7 @@ const WikiTypeSelector: React.FC<WikiTypeSelectorProps> = ({
           onClick={() => setIsComprehensiveView(false)}
           className={`flex items-center justify-between p-3 rounded-md border transition-colors ${
             !isComprehensiveView
-              ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+              ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/30 text-white'
               : 'bg-[var(--background)]/50 border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--background)]'
           }`}
         >

@@ -212,7 +212,7 @@ export default function ProcessedProjects({
                     {project.name}
                   </h3>
                   <div className="flex flex-wrap gap-2 mb-3">
-                    <span className="px-2 py-1 text-xs bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded-full border border-[var(--accent-primary)]/20">
+                    <span className="px-2 py-1 text-xs bg-[var(--accent-primary)]/10  rounded-full border border-[var(--accent-primary)]/20">
                       {project.repo_type}
                     </span>
                     <span className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--muted)] rounded-full border border-[var(--border-color)]">
@@ -247,7 +247,7 @@ export default function ProcessedProjects({
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">
-                    <span className="px-2 py-1 text-xs bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded border border-[var(--accent-primary)]/20">
+                    <span className="px-2 py-1 text-xs bg-[var(--accent-primary)]/10 rounded border border-[var(--accent-primary)]/20">
                       {project.repo_type}
                     </span>
                   </div>

@@ -203,7 +203,7 @@ export default function RepoWikiPage() {
   })();
   const repoType = repoHost?.includes('bitbucket')
     ? 'bitbucket'
-    : repoHost?.includes('gitlab')
+    : repoHost?.includes('cicdcoding.tlb.com')
       ? 'gitlab'
       : repoHost?.includes('github')
         ? 'github'
@@ -545,7 +545,7 @@ Remember:
         try {
           // Create WebSocket URL from the server base URL
           const serverBaseUrl = process.env.SERVER_BASE_URL || 'http://localhost:8001';
-          const wsBaseUrl = serverBaseUrl.replace(/^http/, 'ws')? serverBaseUrl.replace(/^https/, 'wss'): serverBaseUrl.replace(/^http/, 'ws');
+          const wsBaseUrl = serverBaseUrl.replace(/^http/, 'ws');
           const wsUrl = `${wsBaseUrl}/ws/chat`;
 
           // Create a new WebSocket connection
@@ -842,7 +842,8 @@ IMPORTANT:
       try {
         // Create WebSocket URL from the server base URL
         const serverBaseUrl = process.env.SERVER_BASE_URL || 'http://localhost:8001';
-        const wsBaseUrl = serverBaseUrl.replace(/^http/, 'ws')? serverBaseUrl.replace(/^https/, 'wss'): serverBaseUrl.replace(/^http/, 'ws');
+        // const wsBaseUrl = serverBaseUrl.replace(/^http/, 'ws')? serverBaseUrl.replace(/^https/, 'wss'): serverBaseUrl.replace(/^http/, 'ws');
+        const wsBaseUrl = serverBaseUrl.replace(/^http/, 'ws');
         const wsUrl = `${wsBaseUrl}/ws/chat`;
 
         // Create a new WebSocket connection
@@ -1318,7 +1319,7 @@ IMPORTANT:
       }
       else if (effectiveRepoInfo.type === 'gitlab') {
         // GitLab API approach
-        const projectPath = extractUrlPath(effectiveRepoInfo.repoUrl ?? '')?.replace(/\.git$/, '') || `${owner}/${repo}`;
+        const projectPath = extractUrlPath(effectiveRepoInfo.repoUrl ?? '') || `${owner}/${repo}.git`;
         const projectDomain = extractUrlDomain(effectiveRepoInfo.repoUrl ?? "https://gitlab.com");
         const encodedProjectPath = encodeURIComponent(projectPath);
 
@@ -1329,16 +1330,11 @@ IMPORTANT:
 
         try {
           // Step 1: Get project info to determine default branch
-          let projectInfoUrl: string;
           let defaultBranchLocal = 'main'; // fallback
-          try {
-            const validatedUrl = new URL(projectDomain ?? ''); // Validate domain
-            projectInfoUrl = `${validatedUrl.origin}/api/v4/projects/${encodedProjectPath}`;
-          } catch (err) {
-            throw new Error(`Invalid project domain URL: ${projectDomain}`);
-          }
+          const projectInfoPath = `projects/${encodedProjectPath}`;
+          const projectInfoUrl = `/api/gitlab/proxy?base_url=${projectDomain}&path=${projectInfoPath}`;
           const projectInfoRes = await fetch(projectInfoUrl, { headers });
-
+          // console.log("==============",projectInfoRes)
           if (!projectInfoRes.ok) {
             const errorData = await projectInfoRes.text();
             throw new Error(`GitLab project info error: Status ${projectInfoRes.status}, Response: ${errorData}`);
@@ -1346,7 +1342,8 @@ IMPORTANT:
 
           const projectInfo = await projectInfoRes.json();
           defaultBranchLocal = projectInfo.default_branch || 'main';
-          console.log(`Found GitLab default branch: ${defaultBranchLocal}`);
+          const projectId = projectInfo.id; // Get project ID from response
+          console.log(`Found GitLab default branch: ${defaultBranchLocal}, project ID: ${projectId}`);
           // Store the default branch in state
           setDefaultBranch(defaultBranchLocal);
 
@@ -1355,7 +1352,8 @@ IMPORTANT:
           let morePages = true;
           
           while (morePages) {
-            const apiUrl = `${projectInfoUrl}/repository/tree?recursive=true&per_page=100&page=${page}`;
+            const treePath = `projects/${projectId}/repository/tree?recursive=true&per_page=100&page=${page}`;
+            const apiUrl = `/api/gitlab/proxy?base_url=${projectDomain}&path=${treePath}`;
             const response = await fetch(apiUrl, { headers });
 
             if (!response.ok) {
@@ -1381,19 +1379,25 @@ IMPORTANT:
           .map((item: { type: string; path: string }) => item.path)
           .join('\n');
 
-          // Step 4: Try to fetch README.md content
-          const readmeUrl = `${projectInfoUrl}/repository/files/README.md/raw`;
-            try {
+          // Step 4: Try to fetch README.md content (optional, won't fail if missing)
+          try {
+            const readmePath = `projects/${projectId}/repository/files/README.md`;
+            const readmeUrl = `/api/gitlab/proxy?base_url=${projectDomain}&path=${readmePath}`;
             const readmeResponse = await fetch(readmeUrl, { headers });
-              if (readmeResponse.ok) {
-                readmeContent = await readmeResponse.text();
-                console.log('Successfully fetched GitLab README.md');
-              } else {
-              console.warn(`Could not fetch GitLab README.md status: ${readmeResponse.status}`);
-              }
-            } catch (err) {
-            console.warn(`Error fetching GitLab README.md:`, err);
+            if (readmeResponse.ok) {
+              readmeContent = await readmeResponse.text();
+              console.log('Successfully fetched GitLab README.md');
+            } else if (readmeResponse.status === 404) {
+              console.log('README.md not found in repository, continuing without it');
+              readmeContent = ''; // Explicitly set to empty string
+            } else {
+              console.warn(`Could not fetch GitLab README.md, status: ${readmeResponse.status}`);
+              readmeContent = ''; // Set to empty string on other errors
             }
+          } catch (err) {
+            console.log('README.md fetch failed, continuing without it:', err instanceof Error ? err.message : 'Unknown error');
+            readmeContent = ''; // Ensure readmeContent is set even on network errors
+          }
         } catch (err) {
           console.error("Error during GitLab repository tree retrieval:", err);
           throw err;
@@ -2078,7 +2082,7 @@ IMPORTANT:
               <div className="mb-3 flex items-center text-xs text-[var(--muted)]">
                 <span className="mr-2">Wiki Type:</span>
                 <span className={`px-2 py-0.5 rounded-full ${isComprehensiveView
-                  ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30'
+                  ? '  border border-[var(--accent-primary)]/30'
                   : 'bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)]'}`}>
                   {isComprehensiveView
                     ? (messages.form?.comprehensive || 'Comprehensive')
@@ -2168,7 +2172,7 @@ IMPORTANT:
                           return relatedPage ? (
                             <button
                               key={relatedId}
-                              className="bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-xs text-[var(--accent-primary)] px-3 py-1.5 rounded-md transition-colors truncate max-w-full border border-[var(--accent-primary)]/20"
+                              className="bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-xs text-white px-3 py-1.5 rounded-md transition-colors truncate max-w-full border border-[var(--accent-primary)]/20"
                               onClick={() => handlePageSelect(relatedId)}
                             >
                               {relatedPage.title}
