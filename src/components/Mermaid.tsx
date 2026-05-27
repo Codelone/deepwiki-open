@@ -365,25 +365,8 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
         setError(null);
         setSvg('');
     
-        // Preprocess the chart to fix common syntax issues
-        let processedChart = chart;
-          
-        // Fix common Mermaid syntax issues
-        // 1. Replace single quotes with double quotes in node definitions
-        processedChart = processedChart.replace(/\[([^\]]*?)\]/g, (match, content) => {
-          // Replace single quotes with escaped double quotes
-          return `[${content.replace(/'/g, '"')}]`;
-        });
-          
-        // 2. Fix arrow syntax issues
-        processedChart = processedChart.replace(/\]\s*--*>/g, '] -->');
-          
-        // 3. Ensure proper spacing around arrows
-        processedChart = processedChart.replace(/([^\s])--?>/g, '$1 -->');
-        processedChart = processedChart.replace(/--?>([^\s])/g, '--> $1');
-          
-        // Render the chart directly without preprocessing
-        const { svg: renderedSvg } = await mermaid.render(idRef.current, processedChart);
+        // Use the chart as-is, mermaid handles valid syntax correctly
+        const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
     
         if (!isMounted) return;
     

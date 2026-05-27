@@ -1,0 +1,1 @@
+"""Nomic Embed Text Service - OpenAI-compatible embedding API."""
