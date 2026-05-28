@@ -41,9 +41,12 @@
       }
     },
     "openai": {
-      "default_model": "vllm-glm-4.7-flash",
+      "default_model": "mimo-v2.5-pro",
       "supportsCustomModel": true,
       "models": {
+        "mimo-v2.5-pro": {
+          "temperature": 1.0
+        },
         "vllm-glm-4.7-flash": {
           "temperature": 1.0
         }

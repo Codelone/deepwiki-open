@@ -185,7 +185,7 @@ export default function RepoWikiPage() {
 
   // Extract tokens from search params
   const token = searchParams.get('token') || '';
-  const localPath = searchParams.get('local_path') ? decodeURIComponent(searchParams.get('local_path') || '') : undefined;
+  const localPath = searchParams.get('local_path') || undefined;
   const repoUrl = searchParams.get('repo_url') ? decodeURIComponent(searchParams.get('repo_url') || '') : undefined;
   const providerParam = searchParams.get('provider') || '';
   const modelParam = searchParams.get('model') || '';
@@ -231,6 +231,7 @@ export default function RepoWikiPage() {
   const [wikiStructure, setWikiStructure] = useState<WikiStructure | undefined>();
   const [currentPageId, setCurrentPageId] = useState<string | undefined>();
   const [generatedPages, setGeneratedPages] = useState<Record<string, WikiPage>>({});
+  const generatedPagesRef = useRef<Record<string, WikiPage>>({});
   const [pagesInProgress, setPagesInProgress] = useState(new Set<string>());
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -267,6 +268,11 @@ export default function RepoWikiPage() {
   const [structureRequestInProgress, setStructureRequestInProgress] = useState(false);
   // Create a flag to track if data was loaded from cache to prevent immediate re-save
   const cacheLoadedSuccessfully = useRef(false);
+
+  // Sync generatedPages ref for use in callbacks to avoid stale closures
+  useEffect(() => {
+    generatedPagesRef.current = generatedPages;
+  }, [generatedPages]);
 
   // Create a flag to ensure the effect only runs once
   const effectRan = React.useRef(false);
@@ -373,8 +379,8 @@ export default function RepoWikiPage() {
   const generatePageContent = useCallback(async (page: WikiPage, owner: string, repo: string) => {
     return new Promise<void>(async (resolve) => {
       try {
-        // Skip if content already exists
-        if (generatedPages[page.id]?.content) {
+        // Skip if content already exists (use ref to avoid stale closure)
+        if (generatedPagesRef.current[page.id]?.content) {
           resolve();
           return;
         }
@@ -553,14 +559,6 @@ Remember:
 
           // Create a promise that resolves when the WebSocket connection is complete
           await new Promise<void>((resolve, reject) => {
-            // Set up event handlers
-            ws.onopen = () => {
-              console.log(`WebSocket connection established for page: ${page.title}`);
-              // Send the request as JSON
-              ws.send(JSON.stringify(requestBody));
-              resolve();
-            };
-
             ws.onerror = (error) => {
               console.error('WebSocket error:', error);
               reject(new Error('WebSocket connection failed'));
@@ -575,7 +573,6 @@ Remember:
             ws.onopen = () => {
               clearTimeout(timeout);
               console.log(`WebSocket connection established for page: ${page.title}`);
-              // Send the request as JSON
               ws.send(JSON.stringify(requestBody));
               resolve();
             };
@@ -678,7 +675,7 @@ Remember:
         setLoadingMessage(undefined); // Clear specific loading message
       }
     });
-  }, [generatedPages, currentToken, effectiveRepoInfo, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, activeContentRequests, generateFileUrl]);
+  }, [currentToken, effectiveRepoInfo, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, activeContentRequests, generateFileUrl]);
 
   // Determine the wiki structure from repository data
   const determineWikiStructure = useCallback(async (fileTree: string, readme: string, owner: string, repo: string) => {
@@ -1162,7 +1159,7 @@ IMPORTANT:
     } finally {
       setStructureRequestInProgress(false);
     }
-  }, [generatePageContent, currentToken, effectiveRepoInfo, pagesInProgress.size, structureRequestInProgress, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, messages.loading, isComprehensiveView]);
+  }, [generatePageContent, currentToken, effectiveRepoInfo, structureRequestInProgress, selectedProviderState, selectedModelState, isCustomSelectedModelState, customSelectedModelState, modelExcludedDirs, modelExcludedFiles, language, messages.loading, isComprehensiveView]);
 
   // Fetch repository structure using GitHub or GitLab API
   const fetchRepositoryStructure = useCallback(async () => {

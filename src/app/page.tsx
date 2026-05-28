@@ -352,7 +352,7 @@ export default function Home() {
     params.append('type', (type == 'local' ? type : selectedPlatform) || 'github');
     // Add local path if it exists
     if (localPath) {
-      params.append('local_path', encodeURIComponent(localPath));
+      params.append('local_path', localPath);
     } else {
       params.append('repo_url', encodeURIComponent(repositoryInput));
     }

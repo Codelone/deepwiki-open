@@ -1,15 +1,10 @@
-import os
-# 上面所有环境变量在这里也写死，避免终端问题
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
-os.environ["HF_HUB_DOWNLOAD_URL"] = "https://hf-mirror.com"
-os.environ["HF_HOME"] = os.path.expanduser("~/.hf_cache")
-os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "600"
+"""
+Model download script - DISABLED for internal deployment.
 
-from huggingface_hub import snapshot_download
+The nomic-embed-text-v1.5 model should be pre-downloaded to:
+    ./models/nomic-embed-text/
 
-snapshot_download(
-    repo_id="nomic-ai/nomic-embed-text-v1.5",
-    local_dir="./models/nomic-embed-text",
-    resume_download=True,
-    force_download=False
-)
+For internal deployment, manually download the model and place it in the above directory.
+"""
+print("Model download is disabled for internal deployment.")
+print("Please ensure the model is pre-downloaded to: ./models/nomic-embed-text/")

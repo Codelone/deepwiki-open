@@ -358,15 +358,33 @@ const Mermaid: React.FC<MermaidProps> = ({ chart, className = '', zoomingEnabled
 
     let isMounted = true;
 
+    // Preprocess chart to fix common Mermaid syntax issues
+    const preprocessChart = (raw: string): string => {
+      let processed = raw;
+      // Quote node labels that contain special characters which confuse the parser
+      // Matches: nodeId["label with / or ()"] or nodeId['label']
+      // Target: labels inside [] that contain / ( ) [ ] { } characters
+      processed = processed.replace(
+        /(\w+)\[([^\]"']*[/()[\]{}][^\]"']*)\]/g,
+        (match, id, label) => {
+          // If already quoted with "", don't double-quote
+          if (label.startsWith('"') || label.startsWith("'")) return match;
+          return `${id}["${label.replace(/"/g, '&quot;')}"]`;
+        }
+      );
+      return processed;
+    };
+
     const renderChart = async () => {
       if (!isMounted) return;
-    
+
+      let processedChart = chart;
       try {
         setError(null);
         setSvg('');
-    
-        // Use the chart as-is, mermaid handles valid syntax correctly
-        const { svg: renderedSvg } = await mermaid.render(idRef.current, chart);
+
+        processedChart = preprocessChart(chart);
+        const { svg: renderedSvg } = await mermaid.render(idRef.current, processedChart);
     
         if (!isMounted) return;
     

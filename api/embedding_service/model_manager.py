@@ -1,74 +1,39 @@
-"""Model manager for downloading and loading nomic-embed-text model."""
+"""Model manager for loading nomic-embed-text model."""
 
 import os
 import logging
-from pathlib import Path
 from typing import Optional
 from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 DEFAULT_LOCAL_MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "nomic-embed-text")
 
 
 class ModelManager:
-    """Manages downloading and loading of embedding models."""
+    """Manages loading of embedding models from local path."""
 
     def __init__(
         self,
-        model_name: str = DEFAULT_MODEL_NAME,
-        cache_dir: str = None,
+        model_name: str = None,
         device: str = "cpu",
         trust_remote_code: bool = True
     ):
-        self.model_name = model_name
+        self.model_path = DEFAULT_LOCAL_MODEL_PATH
         self.device = device
         self.trust_remote_code = trust_remote_code
         self._model: Optional[SentenceTransformer] = None
 
-        # Determine model path: local path first, then cache_dir, then download
-        if os.path.isdir(DEFAULT_LOCAL_MODEL_PATH):
-            self.model_path = DEFAULT_LOCAL_MODEL_PATH
-            self.use_local = True
-            logger.info(f"Using local model at: {self.model_path}")
-        elif cache_dir:
-            self.model_path = model_name
-            self.cache_dir = cache_dir
-            self.use_local = False
-        else:
-            self.model_path = model_name
-            self.cache_dir = os.path.join(os.path.dirname(__file__), "models")
-            self.use_local = False
-
-    def download_model(self) -> str:
-        """
-        Download the model if not already cached.
-
-        Returns:
-            str: Path to the downloaded model
-        """
-        if self.use_local:
-            logger.info(f"Local model already available at: {self.model_path}")
-            return self.model_path
-
-        logger.info(f"Downloading model {self.model_name} to {self.cache_dir}")
-        Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
-
-        SentenceTransformer(
-            self.model_name,
-            cache_folder=self.cache_dir,
-            trust_remote_code=self.trust_remote_code,
-            device=self.device
-        )
-
-        model_path = os.path.join(self.cache_dir, self.model_name.replace("/", "_"))
-        logger.info(f"Model downloaded to {model_path}")
-        return model_path
+        if not os.path.isdir(self.model_path):
+            raise FileNotFoundError(
+                f"Local model not found at {self.model_path}. "
+                "Please download the model before starting the service."
+            )
+        logger.info(f"Using local model at: {self.model_path}")
 
     def load_model(self) -> SentenceTransformer:
         """
-        Load the model from local path or cache.
+        Load the model from local path.
 
         Returns:
             SentenceTransformer: The loaded model
@@ -76,21 +41,12 @@ class ModelManager:
         if self._model is not None:
             return self._model
 
-        if self.use_local:
-            logger.info(f"Loading model from local path: {self.model_path}")
-            self._model = SentenceTransformer(
-                self.model_path,
-                trust_remote_code=self.trust_remote_code,
-                device=self.device
-            )
-        else:
-            logger.info(f"Loading model {self.model_name}")
-            self._model = SentenceTransformer(
-                self.model_name,
-                cache_folder=self.cache_dir,
-                trust_remote_code=self.trust_remote_code,
-                device=self.device
-            )
+        logger.info(f"Loading model from local path: {self.model_path}")
+        self._model = SentenceTransformer(
+            self.model_path,
+            trust_remote_code=self.trust_remote_code,
+            device=self.device
+        )
 
         logger.info(f"Model loaded successfully on device: {self.device}")
         return self._model

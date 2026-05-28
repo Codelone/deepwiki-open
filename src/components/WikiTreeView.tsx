@@ -127,11 +127,6 @@ const WikiTreeView: React.FC<WikiTreeViewProps> = ({
         )}
       </div>
     );
-
-    // Remove this section from visited set when done
-    visitedSections.current.delete(sectionId);
-
-    return result;
   };
 
   // If there are no sections defined yet, or if sections/rootSections are empty arrays, fall back to the flat list view
