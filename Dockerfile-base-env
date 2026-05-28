@@ -1,0 +1,13 @@
+# Base environment image: strips original app, keeps runtime only
+# Build: docker build -f Dockerfile-base-env -t deepwiki-env:latest .
+FROM ghcr.io/asyncfuncai/deepwiki-open:sha-56669d8
+
+# Remove original application code, keep runtime environment
+RUN rm -rf /app/api /app/.next /app/public /app/package.json /app/node_modules
+
+# Copy pre-downloaded Python packages and install
+COPY docker-packages /tmp/docker-packages
+RUN /opt/venv/bin/python -m pip install --no-cache-dir --no-index --find-links=/tmp/docker-packages sentence-transformers einops \
+    && rm -rf /tmp/docker-packages
+
+# Kept: /opt/venv (Python venv), /app/node_modules, /app/server.js, /app/start.sh

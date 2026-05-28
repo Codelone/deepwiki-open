@@ -1,29 +1,29 @@
-# 使用官方的 Python 基础镜像
-FROM ghcr.io/asyncfuncai/deepwiki-open:sha-bb3c67d
+# Deployment image: builds on base environment image
+# Build:
+#   1. (外网) docker build -f Dockerfile-base-env -t deepwiki-env:latest .
+#   2. (内网) docker build -f Dockerfile-tl -t deepwiki-tl:latest .
+FROM deepwiki-env:latest
 
-# 设置工作目录
 WORKDIR /app
 
-RUN rm -rf /app/api
-RUN rm -rf /app/package.json
-RUN rm -rf /app/.next
-
-
+# Copy application code
+RUN rm -rf /app/node_modules
 COPY api ./api
+RUN rm -rf /app/api/embedding_service/models
 COPY package.json ./package.json
+COPY node_modules ./node_modules
 COPY .next ./.next
+COPY public ./public
 COPY cl100k_base.tiktoken ./cl100k_base.tiktoken
-RUN sed -i 's|https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken|/app/cl100k_base.tiktoken|g' /opt/venv/lib/python3.11/site-packages/tiktoken_ext/openai_public.py
-# Set environment variables
+COPY scripts/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+# Patch tiktoken to use local file instead of downloading from openaipublic
+RUN sed -i 's|https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken|/app/cl100k_base.tiktoken|g' \
+    /opt/venv/lib/python3.11/site-packages/tiktoken_ext/openai_public.py
+
 ENV PORT=8001
 ENV NODE_ENV=production
 ENV SERVER_BASE_URL=http://localhost:${PORT:-8001}
 
-
-# Command to run the application
 CMD ["/app/start.sh"]
-
-
-
-
-

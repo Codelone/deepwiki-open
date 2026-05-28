@@ -2,11 +2,12 @@ services:
   deepwiki:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: deepwiki-tl:1.0
+      dockerfile: Dockerfile-tl
+    image: deepwiki-tl:latest
     ports:
-      - "${PORT:-8001}:${PORT:-8001}"  # API port
-      - "3000:3000"  # Next.js port
+      - "${PORT:-8003}:${PORT:-8001}"  # API port
+      - "3001:3000"  # Next.js port
+      - "${EMBEDDING_PORT:-8004}:8002"  # Embedding Service port
     env_file:
       - .env
     environment:
@@ -15,11 +16,15 @@ services:
       - SERVER_BASE_URL=http://localhost:${PORT:-8001}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - LOG_FILE_PATH=${LOG_FILE_PATH:-api/logs/application.log}
+      - EMBEDDING_PORT=${EMBEDDING_PORT:-8002}
+      - EMBEDDING_DEVICE=${EMBEDDING_DEVICE:-cpu}
     volumes:
       - ./.adalflow:/root/.adalflow      # Persist repository and embedding data
-      - ./api/logs:/app/api/logs          # Persist log files across container restarts
-      - ./api/config:/app/api/config     #Persist config files across container restarts
+      - ./logs:/app/logs                 # Service logs (api.log, embedding.log, nextjs.log)
+      - ./api/config:/app/api/config     # Persist config files across container restarts
+      - ./api/embedding_service/models:/app/api/embedding_service/models  # Embedding model (2.1GB)
       - ./.env:/app/.env
+      - /Users/lyl/workspace/:/Users/lyl/workspace
     # Resource limits for docker-compose up (not Swarm mode)
     mem_limit: 6g
     mem_reservation: 2g

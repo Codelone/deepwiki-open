@@ -16,9 +16,11 @@ class ModelManager:
     def __init__(
         self,
         model_name: str = None,
+        cache_dir: str = None,
         device: str = "cpu",
         trust_remote_code: bool = True
     ):
+        self.model_name = model_name or "nomic-embed-text"
         self.model_path = DEFAULT_LOCAL_MODEL_PATH
         self.device = device
         self.trust_remote_code = trust_remote_code
